@@ -1,6 +1,22 @@
 #include<stdio.h>
 #include "timeWheel.h"
 
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis
+ *      create a timewheel with num_slots and each successive slots being
+ *      granularity milliseconds
+ *
+ * @Param num_slots
+ *      number of slots/wheels
+ * @Param granularity
+ *      duration between slots (in milliseconds)
+ *
+ * @Returns   
+ *      the timewheel instance
+ */
+/* ----------------------------------------------------------------------------*/
 TW *TW_init(int num_slots, int granularity){
     TW *tw = malloc(sizeof(*tw));
     tw->num_slots = num_slots;
@@ -8,6 +24,28 @@ TW *TW_init(int num_slots, int granularity){
     tw->slots = malloc(sizeof(void *) * num_slots);
     return tw;
 }
+
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  
+ *      create a task
+ *
+ * @Param first
+ *      first time the tsk should be fired
+ * @Param interval
+ *      interval the task happen
+ * @Param ttype
+ *      repeat/once
+ * @Param f
+ *      call back function
+ * @Param f_arg
+ *      call back function type
+ *
+ * @Returns   
+ *      the task instance
+ */
+/* ----------------------------------------------------------------------------*/
 task_t *task_init(int first, int interval, task_type_t ttype, task_fun_t f, void * f_arg ){
     task_t *task = malloc(sizeof(*task));
     task->func = f;
@@ -18,6 +56,21 @@ task_t *task_init(int first, int interval, task_type_t ttype, task_fun_t f, void
 
     return task;
 }
+
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  
+ *
+ *      Add task to a timewheel
+ *
+ * @Param tw: the timewheel instance
+ * @Param first: first time (in ms) the task should be fired 
+ * @Param interval: successive times (in ms) the task should be fired 
+ * @Param ttype: task type. can be REPEAT/ONCE
+ * @Param f: the task call back function
+ * @Param f_arg: the task call back function argument
+ */
+/* ----------------------------------------------------------------------------*/
 
 void TW_add_task(TW *tw, int first, int interval, task_type_t ttype, task_fun_t f, void * f_arg ){
     task_t *task = NULL;
@@ -37,6 +90,18 @@ void TW_add_task(TW *tw, int first, int interval, task_type_t ttype, task_fun_t 
 }
 
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis
+ *      convert milliseconds to timeval struct
+ *
+ * @Param ms
+ *      milliseconds
+ *
+ * @Returns   
+ *      timeval struct containing seconds and microseconds
+ */
+/* ----------------------------------------------------------------------------*/
 struct timeval *to_tv(int ms){
     struct timeval *tv = NULL;
 
@@ -46,6 +111,15 @@ struct timeval *to_tv(int ms){
     return tv;
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  
+ *      sleep for msec (milliseconds)
+ *
+ * @Param msec
+ *      sleep time
+ */
+/* ----------------------------------------------------------------------------*/
 void select_sleep(int msec){
     struct timeval *tv = to_tv(msec);
     while(1){
@@ -56,10 +130,32 @@ void select_sleep(int msec){
     free(tv);
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  
+ *      fire up the task call back function
+ *
+ * @Param tw
+ *      the timewheel
+ * @Param task
+ *      the task
+ */
+/* ----------------------------------------------------------------------------*/
 void do_task(TW *tw, task_t *task){
     task->func(task->func_args);
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis 
+ *      Do tasks that expire. The tasks are contained in the linkedlist 
+ *
+ * @Param tw
+ *      the timerwheel instance
+ * @Param list
+ *      the list containing expiry tasks that should be called
+ */
+/* ----------------------------------------------------------------------------*/
 void do_tasks(TW *tw, dlist_t *list){
     dlist_itr_t *itr = get_itr_dlist(list, NORMAL);
     dlist_t *repeat_tasks = init_dlist(NULL, NULL);
@@ -87,6 +183,15 @@ void do_tasks(TW *tw, dlist_t *list){
 }
 
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis
+ *      Start the timerwheel
+ *
+ * @Param tw
+ *      timerwheel instance
+ */
+/* ----------------------------------------------------------------------------*/
 void TW_start(TW *tw){
     while(1){
         dlist_t *list = (dlist_t *) tw->slots[tw->cur_index];

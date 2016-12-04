@@ -18,24 +18,6 @@ void task_call(void *arg) {
 }
 
 int main(){
-    /*int n1arr[] = {1,2,3};*/
-    /*int n2arr[] = {4,5};*/
-
-    /*this is for singly linked list*/
-    /*list_t *list = list_init( &free_arr_node, &print_arr_node);*/
-    /*list_add(list, (void *) arr_node_init(n1arr, 3));*/
-    /*list_add(list, (void *) arr_node_init(n2arr, 2));*/
-    /*list_print(list);*/
-    /*list_destroy(list);*/
-
-
-    /*dlist_t *list = init_dlist( &free_arr_node, &print_arr_node);*/
-    /*prepend_dlist(list, (void *) arr_node_init(n1arr, 3));*/
-    /*prepend_dlist(list, (void *) arr_node_init(n2arr, 2));*/
-    /*show_dlist(list, NORMAL);*/
-    /*show_dlist(list, REVERSE);*/
-    /*destroy_dlist(list);*/
-
     TW *tw = NULL;
     int *id = NULL;
 
