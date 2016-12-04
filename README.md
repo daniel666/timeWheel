@@ -14,5 +14,8 @@ A simple test program is provided in test_timeWheel.c
 
 To compile the program.
      gcc -o test_timeWheel test_timeWheel.c timeWheel.c dlist_generic.c
+     
 to run the program
     ./test_timeWheel
+    
+    
