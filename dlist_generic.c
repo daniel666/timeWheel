@@ -102,12 +102,12 @@ void destroy_dlist(dlist_t *list){
     free_func_t freefun = list->freefun;
     dlist_itr_t *itr = get_itr_dlist(list, NORMAL );
     while(has_next(itr)){
-        node_t *curnode = itr->next;
+        node_t *curnode = get_next_node(itr);
         if( freefun )
             freefun(curnode->val);
         free(curnode);
-        get_next(itr);
     }
+    free(itr);
     free(list->head);
     free(list->tail);
     free(list);

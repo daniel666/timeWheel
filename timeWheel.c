@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<string.h>
 #include "timeWheel.h"
 
 
@@ -20,8 +21,10 @@
 TW *TW_init(int num_slots, int granularity){
     TW *tw = malloc(sizeof(*tw));
     tw->num_slots = num_slots;
+    tw->cur_index = 0;
+    tw->rotation_cnt = 0;
     tw->granularity = granularity;
-    tw->slots = malloc(sizeof(void *) * num_slots);
+    tw->slots = calloc(num_slots, sizeof(void *));
     return tw;
 }
 
@@ -57,6 +60,11 @@ task_t *task_init(int first, int interval, task_type_t ttype, task_fun_t f, void
     return task;
 }
 
+void task_free(void *task){
+    task_t *tptr = (task_t *)task;
+    free(task);
+}
+
 /* --------------------------------------------------------------------------*/
 /**
  * @Synopsis  
@@ -74,15 +82,18 @@ task_t *task_init(int first, int interval, task_type_t ttype, task_fun_t f, void
 
 void TW_add_task(TW *tw, int first, int interval, task_type_t ttype, task_fun_t f, void * f_arg ){
     task_t *task = NULL;
+    int nidx = 0;
+    int nround = 0;
+    int nrround_offset = 0;
 
     task = task_init(first, interval, ttype, f, f_arg);
-    int nidx = (tw->cur_index + first/tw->granularity) % tw->num_slots;
-    int nrround_offset = (tw->cur_index + first/tw->granularity) / tw->num_slots;
-    int nround = tw->rotation_cnt + nrround_offset;
+    nidx = (tw->cur_index + first/tw->granularity) % tw->num_slots;
+    nrround_offset = (tw->cur_index + first/tw->granularity) / tw->num_slots;
+    nround = tw->rotation_cnt + nrround_offset;
     task->rotation_cnt = nround;
 
     if(tw->slots[nidx] ==   NULL){
-        tw->slots[nidx] = init_dlist(NULL, NULL);
+        tw->slots[nidx] = init_dlist( &task_free, NULL);
     }
     PREPEND_LIST(tw->slots[nidx], task);
     printf("add task %d to slo %d for roudn %d\n", *((int *) f_arg), nidx, nround);
@@ -158,19 +169,22 @@ void do_task(TW *tw, task_t *task){
 /* ----------------------------------------------------------------------------*/
 void do_tasks(TW *tw, dlist_t *list){
     dlist_itr_t *itr = get_itr_dlist(list, NORMAL);
-    dlist_t *repeat_tasks = init_dlist(NULL, NULL);
+    dlist_t *repeat_tasks = init_dlist(&task_free, NULL);
     node_t *curnode = NULL;
     while(has_next(itr)){
         curnode = get_next_node(itr);
         task_t *task =  (task_t *) curnode->val;
         if(task->rotation_cnt == tw->rotation_cnt){
             do_task(tw, task);
-            delete_dlist_node(list, curnode);
             if(task->type == REPEAT){
-                PREPEND_LIST(repeat_tasks, task);
+                task_t *ntask = malloc(sizeof(*ntask));
+                memcpy(ntask, task, sizeof(*task));
+                PREPEND_LIST(repeat_tasks, ntask);
             }
+            delete_dlist_node(list, curnode);
         }
     }
+    free(itr);
 
     dlist_itr_t *list_itr = get_itr_dlist(repeat_tasks, NORMAL);
     while(has_next(list_itr)){
@@ -179,7 +193,6 @@ void do_tasks(TW *tw, dlist_t *list){
     }
     destroy_dlist(repeat_tasks);
     free(list_itr);
-    free(itr);
 }
 
 

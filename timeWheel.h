@@ -34,6 +34,7 @@ void do_tasks(TW *tw, dlist_t *list);
 void TW_start(TW *tw);
 
 task_t *task_init(int first, int interval, task_type_t ttype, task_fun_t f, void * f_arg );
+void task_free(void *task);
 #define PREPEND_LIST(lptr, tptr) (prepend_dlist( ((dlist_t *)(lptr)), (void *)(tptr)) )
 #endif
 
