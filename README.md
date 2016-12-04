@@ -8,3 +8,11 @@ A timeWheel is a structure that holds multiple queues of tasks that should be fi
 
 The timewheel advance its slot per granularity milliseconds, and will return to slot 0 when it goes beyond the maximal slot. 
 At each slot, the timewheel fire up tasks stored in that slot, (i.e., call their respective callback function), remove them from the queue, and add repeated tasks to their specific slot for the next occurence (according to their interval). Tasks that repeat only for once are removed permanently. 
+
+the queue is implemented as a doubly linked list in dlist_generic.h/c and the timewheel is implemented in timeWheel.c/h. 
+A simple test program is provided in test_timeWheel.c
+
+To compile the program.
+     gcc -o test_timeWheel test_timeWheel.c timeWheel.c dlist_generic.c
+to run the program
+    ./test_timeWheel
